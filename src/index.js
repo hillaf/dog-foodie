@@ -96,8 +96,21 @@ class FoodPlan extends React.Component {
 	constructor(props) {
 		super(props)
 		this.state = {
-			items: []
+			items: [],
+			initial_items: [],
+			planned_items: [],
 		}
+		this.handleSubmit = this.handleSubmit.bind(this);
+	}
+
+	filterList(event) {
+		var updatedList = this.state.initial_items;
+		updatedList = updatedList.filter(function(item){
+      return !item.props.name.search(
+        event.target.value.toLowerCase()
+      );
+    });
+    this.setState({items: updatedList});
 	}
 
 	componentDidMount(){
@@ -111,23 +124,48 @@ class FoodPlan extends React.Component {
 				for (let j = 0; j < batchRowValues[i].length; j++) {
 					rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
 				}
-				rows.push(rowObject);
+
+				rows.push(<FoodItem key={rowObject.FOODID} name={rowObject.FOODNAME.toLowerCase()} type={rowObject.FOODTYPE.toLowerCase()} handleSubmit={this.handleSubmit} />);
 			}
 
-			this.setState({items: rows});
-			console.log(this.state.items);
+			this.setState({initial_items: rows});
 		});
 	}
 
+	handleSubmit(food, event){
+    var new_plan = this.state.planned_items.slice();
+    new_plan.push(food);
+    this.setState({planned_items:new_plan})
+	}
+
 	render() {
-		const listItems = this.state.items.map((item) =>
-    	<li>{item.FOODNAME} </li>
-  	);
+		const planned = this.state.planned_items.map((item) =>
+			<ul>{item.props.name}, {item.props.type}</ul>
+		);
+
     return (
-      <div>
-         <ul>{listItems}</ul>
+			<div className="food-items">
+				Planned foods:
+				<ul>{planned}</ul>
+				<input type="text" placeholder="Search" onChange={this.filterList.bind(this)}/>
+				<ul>{this.state.items}</ul>
       </div>
     );
+	}
+}
+
+
+class FoodItem extends React.Component {
+	constructor(props) {
+		super(props)
+	}
+
+	render(){
+		return(
+			<button onClick={(event) => this.props.handleSubmit(this, event)}>
+				<li>{this.props.name}, {this.props.type} </li>
+			</button>
+		);
 	}
 }
 
