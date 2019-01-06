@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 
-
 class Dog extends React.Component {
 	constructor(props) {
 		super(props);
@@ -45,7 +44,6 @@ class Dog extends React.Component {
     		</div>
   		</div>
   	);
-
   }
 
   render() {
@@ -54,18 +52,18 @@ class Dog extends React.Component {
 				<form onSubmit={this.handleSubmit}>
 	        <label>
 	          Dog weight:
-	          <input name="weight" type="number" value={this.state.weight} onChange={this.handleChange} />
 	        </label>
+	        <input name="weight" type="number" value={this.state.weight} onChange={this.handleChange} />
 	        <br />
 	        <label>
 	        	Activity:
-	        	<select name="activity" value={this.state.activity} onChange={this.handleChange}>
-    					<option value="1">Average</option>
-    					<option value="0.8">Low</option>
-    					<option value="1.5">High</option>
-    					<option value="2">Very high</option>
-    				</select>
 	        </label>
+        	<select name="activity" value={this.state.activity} onChange={this.handleChange}>
+  					<option value="1">Average</option>
+  					<option value="0.8">Low</option>
+  					<option value="1.5">High</option>
+  					<option value="2">Very high</option>
+  				</select>
 	      </form>
 
 	      {this.renderInfo()}
@@ -99,6 +97,7 @@ class FoodPlan extends React.Component {
 			items: [],
 			initial_items: [],
 			planned_items: [],
+			food_components: [],
 		}
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
@@ -106,9 +105,8 @@ class FoodPlan extends React.Component {
 	filterList(event) {
 		var updatedList = this.state.initial_items;
 		updatedList = updatedList.filter(function(item){
-      return !item.props.name.search(
-        event.target.value.toLowerCase()
-      );
+      return (!item.props.name.search(event.target.value.toLowerCase()) 
+      	|| !item.props.type.search(event.target.value.toLowerCase()));
     });
     this.setState({items: updatedList});
 	}
@@ -116,39 +114,43 @@ class FoodPlan extends React.Component {
 	componentDidMount(){
 		const API = 'https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA'
 		fetch(API).then(response => response.json()).then(data => {
-			let batchRowValues = data.valueRanges[0].values;
+		let batchRowValues = data.valueRanges[0].values;
 
-			const rows = [];
-			for (let i = 1; i < batchRowValues.length; i++) {
-				let rowObject = {};
-				for (let j = 0; j < batchRowValues[i].length; j++) {
-					rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
-				}
-
-				rows.push(<FoodItem key={rowObject.FOODID} name={rowObject.FOODNAME.toLowerCase()} type={rowObject.FOODTYPE.toLowerCase()} handleSubmit={this.handleSubmit} />);
+		const rows = [];
+		for (let i = 1; i < batchRowValues.length; i++) {
+			let rowObject = {};
+			for (let j = 0; j < batchRowValues[i].length; j++) {
+				rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
 			}
-
-			this.setState({initial_items: rows});
+			rows.push(<FoodItem id={rowObject.FOODID} name={rowObject.FOODNAME.toLowerCase()} type={rowObject.FOODTYPE.toLowerCase()} handleSubmit={this.handleSubmit} />);
+		}
+		this.setState({initial_items: rows});
 		});
 	}
 
 	handleSubmit(food, event){
+		// get nutritional values from https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA
+		// or https://fineli.fi/fineli/api/v1/foods/{id}
     var new_plan = this.state.planned_items.slice();
     new_plan.push(food);
-    this.setState({planned_items:new_plan})
+    this.setState({planned_items: new_plan})
 	}
 
 	render() {
 		const planned = this.state.planned_items.map((item) =>
-			<ul>{item.props.name}, {item.props.type}</ul>
+			<ul>{item.props.id}, {item.props.name}, {item.props.type}</ul>
 		);
 
     return (
 			<div className="food-items">
-				Planned foods:
-				<ul>{planned}</ul>
-				<input type="text" placeholder="Search" onChange={this.filterList.bind(this)}/>
-				<ul>{this.state.items}</ul>
+				<div className="food-plan">
+					Planned foods:
+					<ul>{planned}</ul>
+				</div>
+				<div className="search">
+					<input type="text" placeholder="Search" onChange={this.filterList.bind(this)}/>
+					<ul>{this.state.items}</ul>
+				</div>
       </div>
     );
 	}
@@ -156,25 +158,18 @@ class FoodPlan extends React.Component {
 
 
 class FoodItem extends React.Component {
-	constructor(props) {
-		super(props)
-	}
-
-	render(){
+	render() {
 		return(
-			<button onClick={(event) => this.props.handleSubmit(this, event)}>
-				<li>{this.props.name}, {this.props.type} </li>
-			</button>
+			<div>
+				<button onClick={(event) => this.props.handleSubmit(this, event)}>
+					{this.props.id}, {this.props.name}, {this.props.type}
+				</button>
+			</div>
 		);
 	}
 }
 
-
 class Calculator extends React.Component {
-	constructor(props) {
-		super(props)
-	}
-
   render() {
     return (
     	<div className="calculator">
