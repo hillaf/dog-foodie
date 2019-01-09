@@ -100,13 +100,14 @@ class FoodPlan extends React.Component {
 			food_components: [],
 		}
 		this.handleSubmit = this.handleSubmit.bind(this);
+		this.filterList = this.filterList.bind(this);
 	}
 
 	filterList(event) {
 		var updatedList = this.state.initial_items;
-		updatedList = updatedList.filter(function(item){
+		updatedList = updatedList.filter(function(item)	{
       return (!item.props.name.search(event.target.value.toLowerCase()) 
-      	|| !item.props.type.search(event.target.value.toLowerCase()));
+      || !item.props.type.search(event.target.value.toLowerCase()));
     });
     this.setState({items: updatedList});
 	}
@@ -114,25 +115,25 @@ class FoodPlan extends React.Component {
 	componentDidMount(){
 		const API = 'https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA'
 		fetch(API).then(response => response.json()).then(data => {
-		let batchRowValues = data.valueRanges[0].values;
+			let batchRowValues = data.valueRanges[0].values;
 
-		const rows = [];
-		for (let i = 1; i < batchRowValues.length; i++) {
-			let rowObject = {};
-			for (let j = 0; j < batchRowValues[i].length; j++) {
-				rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
+			const rows = [];
+			for (let i = 1; i < batchRowValues.length; i++) {
+				let rowObject = {};
+				for (let j = 0; j < batchRowValues[i].length; j++) {
+					rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
+				}
+				rows.push(<FoodItem id={rowObject.FOODID} name={rowObject.FOODNAME.toLowerCase()} type={rowObject.FOODTYPE.toLowerCase()} handleSubmit={this.handleSubmit} />);
 			}
-			rows.push(<FoodItem id={rowObject.FOODID} name={rowObject.FOODNAME.toLowerCase()} type={rowObject.FOODTYPE.toLowerCase()} handleSubmit={this.handleSubmit} />);
-		}
-		this.setState({initial_items: rows});
+			this.setState({initial_items: rows});
 		});
 	}
 
 	handleSubmit(food, event){
 		// get nutritional values from https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA
 		// or https://fineli.fi/fineli/api/v1/foods/{id}
-    var new_plan = this.state.planned_items.slice();
-    new_plan.push(food);
+    var new_plan = this.state.planned_itemss.slice();
+    new_plan.push(<FoodItem id={food.id} name={food.name} type={food.type} handleSubmit={this.handleSubmit} />);
     this.setState({planned_items: new_plan})
 	}
 
@@ -148,10 +149,10 @@ class FoodPlan extends React.Component {
 					<ul>{planned}</ul>
 				</div>
 				<div className="search">
-					<input type="text" placeholder="Search" onChange={this.filterList.bind(this)}/>
+					<input type="text" placeholder="Search" onChange={this.filterList}/>
 					<ul>{this.state.items}</ul>
 				</div>
-      </div>
+	     </div>
     );
 	}
 }
@@ -161,7 +162,7 @@ class FoodItem extends React.Component {
 	render() {
 		return(
 			<div>
-				<button onClick={(event) => this.props.handleSubmit(this, event)}>
+				<button onClick={(event) => this.props.handleSubmit(this.props, event)}>
 					{this.props.id}, {this.props.name}, {this.props.type}
 				</button>
 			</div>

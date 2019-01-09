@@ -1,0 +1,5 @@
+TODO
+- get nutritional values of the items
+- calculate nutritional value of the basket
+- refactor planned foods rendering
+- color hilight: needs met/not met
