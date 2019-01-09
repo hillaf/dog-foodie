@@ -107,13 +107,13 @@ class FoodPlan extends React.Component {
 		var updatedList = this.state.initial_items;
 		updatedList = updatedList.filter(function(item)	{
       return (!item.props.name.search(event.target.value.toLowerCase()) 
-      || !item.props.type.search(event.target.value.toLowerCase()));
+      	|| !item.props.type.search(event.target.value.toLowerCase()));
     });
     this.setState({items: updatedList});
 	}
 
 	componentDidMount(){
-		const API = 'https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA'
+		var API = 'https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA'
 		fetch(API).then(response => response.json()).then(data => {
 			let batchRowValues = data.valueRanges[0].values;
 
@@ -127,19 +127,46 @@ class FoodPlan extends React.Component {
 			}
 			this.setState({initial_items: rows});
 		});
+
+		API = 'https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA'
+		fetch(API).then(response => response.json()).then(data => {
+			let batchRowValues = data.valueRanges[0].values;
+
+			const rows = [];
+			for (let i = 1; i < batchRowValues.length; i++) {
+				let rowObject = {};
+				for (let j = 0; j < batchRowValues[i].length; j++) {
+					rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
+					rows.push(rowObject);
+				}
+			}
+			this.setState({food_components: rows});
+			console.log(this.state.food_components)
+		});
+
+	}
+
+	getFoodComponents(id){
+		var components = this.state.food_components;
+		components = components.filter(function(item)	{
+      return (!item.FOODID.search(id));
+    });
+    // TODO: pull relevant components from the rows found
+    return 100
 	}
 
 	handleSubmit(food, event){
-		// get nutritional values from https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA
-		// or https://fineli.fi/fineli/api/v1/foods/{id}
-    var new_plan = this.state.planned_itemss.slice();
-    new_plan.push(<FoodItem id={food.id} name={food.name} type={food.type} handleSubmit={this.handleSubmit} />);
+    var new_plan = this.state.planned_items.slice();
+    // TODO: fetch other components too
+    const energy = this.getFoodComponents(food.id)
+    console.log(energy)
+    new_plan.push(<FoodItem id={food.id} name={food.name} type={food.type} handleSubmit={this.handleSubmit} energy={energy}/>);
     this.setState({planned_items: new_plan})
 	}
 
 	render() {
 		const planned = this.state.planned_items.map((item) =>
-			<ul>{item.props.id}, {item.props.name}, {item.props.type}</ul>
+			<ul>{item.props.id}, {item.props.name}, {item.props.type}, {item.props.energy} kcal/100 g</ul>
 		);
 
     return (
