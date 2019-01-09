@@ -113,7 +113,8 @@ class FoodPlan extends React.Component {
 	}
 
 	componentDidMount(){
-		var API = 'https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA'
+		const API_KEY = process.env.REACT_APP_GOOGLESHEETS_APIKEY;
+		var API = "https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key="+API_KEY
 		fetch(API).then(response => response.json()).then(data => {
 			let batchRowValues = data.valueRanges[0].values;
 
@@ -128,7 +129,7 @@ class FoodPlan extends React.Component {
 			this.setState({initial_items: rows});
 		});
 
-		API = 'https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key=AIzaSyCx8i9JfeZVdvGc1ylJw6laHrejOeHTfeA'
+		API = "https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key="+API_KEY
 		fetch(API).then(response => response.json()).then(data => {
 			let batchRowValues = data.valueRanges[0].values;
 

@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+.gitsecret/
+.env
+.gitsecret
+src/api_key.txt
+.env
