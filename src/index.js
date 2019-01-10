@@ -34,13 +34,13 @@ class Dog extends React.Component {
   	this.calculateDailyNeeds();
   	return(
   		<div>
-    		<ul>Metabolic weight: {this.state.metabolic_weight} kg</ul>
+				<ul>Metabolic weight: {this.state.metabolic_weight.toFixed(2)} kg</ul>
     		<div className="needs">
     			Daily need for:
-	    		<ul>Energy: {this.state.energy_kcals} kcal </ul>
-	    		<ul>Protein: {this.state.protein} g </ul>
-	    		<ul>Calcium: {this.state.calcium} mg </ul>
-	    		<ul>Vitamin D: {this.state.vit_d} µg </ul>
+					<ul>Energy: {this.state.energy_kcals.toFixed(2)} kcal </ul>
+					<ul>Protein: {this.state.protein.toFixed(2)} g </ul>
+					<ul>Calcium: {this.state.calcium.toFixed(2)} mg </ul>
+					<ul>Vitamin D: {this.state.vit_d.toFixed(2)} µg </ul>
     		</div>
   		</div>
   	);
@@ -71,20 +71,18 @@ class Dog extends React.Component {
     );
   }
 
-  calculateDailyNeeds(){
+  calculateDailyNeeds() {
   	if (this.state.activity == null) this.state.activity = 1
-  	const met_weight = Math.pow(this.state.weight, 0.75).toFixed(2)
-  	const energy = ((met_weight * 500)*this.state.activity).toFixed(2)
-  	console.log(energy)
-  	console.log(this.state.activity)
+		const met_weight = Math.pow(this.state.weight, 0.75)
+		const energy = ((met_weight * 500)*this.state.activity)
 
   	this.state = {
-  		metabolic_weight: met_weight,
-  		energy_joules: energy,
-  		energy_kcals: (energy * 0.238).toFixed(2),
-  		calcium: (met_weight * 130).toFixed(2), 
-  		protein: (met_weight * 5).toFixed(2),
-  		vit_d: (this.state.weight * 0.3).toFixed(2),
+			metabolic_weight: met_weight,
+			energy_joules: energy,
+			energy_kcals: (energy * 0.238),
+			calcium: (met_weight * 130),
+			protein: (met_weight * 5),
+			vit_d: (this.state.weight * 0.3),
   	}
   }
 }
@@ -98,13 +96,14 @@ class FoodPlan extends React.Component {
 			initial_items: [],
 			planned_items: [],
 			food_components: [],
+			basket_energy: 0,
 		}
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.filterList = this.filterList.bind(this);
 	}
 
 	filterList(event) {
-		var updatedList = this.state.initial_items;
+		let updatedList = this.state.initial_items;
 		updatedList = updatedList.filter(function(item)	{
       return (!item.props.name.search(event.target.value.toLowerCase()) 
       	|| !item.props.type.search(event.target.value.toLowerCase()));
@@ -112,9 +111,9 @@ class FoodPlan extends React.Component {
     this.setState({items: updatedList});
 	}
 
-	componentDidMount(){
+	componentDidMount() {
 		const API_KEY = process.env.REACT_APP_GOOGLESHEETS_APIKEY;
-		var API = "https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key="+API_KEY
+		let API = "https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key="+API_KEY
 		fetch(API).then(response => response.json()).then(data => {
 			let batchRowValues = data.valueRanges[0].values;
 
@@ -142,32 +141,32 @@ class FoodPlan extends React.Component {
 				}
 			}
 			this.setState({food_components: rows});
-			console.log(this.state.food_components)
 		});
 
 	}
 
-	getFoodComponents(id){
-		var components = this.state.food_components;
-		components = components.filter(function(item)	{
-      return (!item.FOODID.search(id));
-    });
-    // TODO: pull relevant components from the rows found
-    return 100
+	updateFoodComponents(id) {
+		let components = this.state.food_components.filter((item)	=> (item.FOODID === id));
+		let energy = components.find((item)	=> (item.EUFDNAME === "ENERC"));
+		let new_energy = parseFloat(energy.BESTLOC.replace(",", ".")) + this.state.basket_energy;
+		console.log(new_energy)
+		this.setState({basket_energy: new_energy})
+
+   // return parseFloat(energy.BESTLOC.replace(",", "."));
 	}
 
-	handleSubmit(food, event){
-    var new_plan = this.state.planned_items.slice();
+	handleSubmit(food, event) {
+    let new_plan = this.state.planned_items.slice();
     // TODO: fetch other components too
-    const energy = this.getFoodComponents(food.id)
-    console.log(energy)
-    new_plan.push(<FoodItem id={food.id} name={food.name} type={food.type} handleSubmit={this.handleSubmit} energy={energy}/>);
+    this.updateFoodComponents(food.id)
+    new_plan.push(<FoodItem id={food.id} name={food.name} type={food.type} handleSubmit={this.handleSubmit} />);
     this.setState({planned_items: new_plan})
 	}
 
 	render() {
+		// TODO: refactor, conditional rendering or new class for planned items
 		const planned = this.state.planned_items.map((item) =>
-			<ul>{item.props.id}, {item.props.name}, {item.props.type}, {item.props.energy} kcal/100 g</ul>
+			<ul>{item.props.name}, {item.props.type}, 100 g</ul>
 		);
 
     return (
@@ -175,6 +174,8 @@ class FoodPlan extends React.Component {
 				<div className="food-plan">
 					Planned foods:
 					<ul>{planned}</ul>
+					Total energy planned:
+					<ul>{this.state.basket_energy.toFixed(2)} kcal</ul>
 				</div>
 				<div className="search">
 					<input type="text" placeholder="Search" onChange={this.filterList}/>

@@ -1,5 +1,9 @@
 TODO
 - get nutritional values of the items
+- refactor api calls
 - calculate nutritional value of the basket
-- refactor planned foods rendering
+- find out why there are five of each food components from the sheets api
 - color hilight: needs met/not met
+- refactor planned foods rendering
+- option to choose the amount of item in basket
+- add more nutrients
