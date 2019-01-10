@@ -96,7 +96,10 @@ class FoodPlan extends React.Component {
 			initial_items: [],
 			planned_items: [],
 			food_components: [],
-			basket_energy: 0,
+			ENERC: 0,
+			PROT: 0,
+			CA: 0,
+			VITD: 0,
 		}
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.filterList = this.filterList.bind(this);
@@ -145,14 +148,19 @@ class FoodPlan extends React.Component {
 
 	}
 
+	updateNutrient(comp, nutrient){
+		let nutrient_value = comp.find((item) => (item.EUFDNAME === nutrient));
+		console.log(nutrient_value)
+		console.log(nutrient)
+		let new_value = parseFloat(nutrient_value.BESTLOC.replace(",", ".")) + this.state[nutrient];
+		console.log(this.state[nutrient])
+		this.setState({[nutrient]: new_value});
+	}
+
 	updateFoodComponents(id) {
 		let components = this.state.food_components.filter((item)	=> (item.FOODID === id));
-		let energy = components.find((item)	=> (item.EUFDNAME === "ENERC"));
-		let new_energy = parseFloat(energy.BESTLOC.replace(",", ".")) + this.state.basket_energy;
-		console.log(new_energy)
-		this.setState({basket_energy: new_energy})
-
-   // return parseFloat(energy.BESTLOC.replace(",", "."));
+		let nutrients = ["ENERC", "PROT", "CA", "VITD"]
+		nutrients.forEach((nutrient) => this.updateNutrient(components, nutrient));
 	}
 
 	handleSubmit(food, event) {
@@ -174,8 +182,11 @@ class FoodPlan extends React.Component {
 				<div className="food-plan">
 					Planned foods:
 					<ul>{planned}</ul>
-					Total energy planned:
-					<ul>{this.state.basket_energy.toFixed(2)} kcal</ul>
+					Total nutrients planned:
+					<ul>Energy: {this.state.ENERC.toFixed(2)} kcal</ul>
+					<ul>Protein: {this.state.PROT.toFixed(2)} g</ul>
+					<ul>Calcium: {this.state.CA.toFixed(2)} mg</ul>
+					<ul>Vitamin D: {this.state.VITD.toFixed(2)} ug</ul>
 				</div>
 				<div className="search">
 					<input type="text" placeholder="Search" onChange={this.filterList}/>
