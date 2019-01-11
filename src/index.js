@@ -105,55 +105,45 @@ class FoodPlan extends React.Component {
 		this.filterList = this.filterList.bind(this);
 	}
 
+	fetchData(URL, array_name) {
+		const API_KEY = process.env.REACT_APP_GOOGLESHEETS_APIKEY;
+		URL = URL + API_KEY;
+		fetch(URL).then(response => response.json()).then(data => {
+			let batchRowValues = data.valueRanges[0].values;
+
+			const rows = [];
+			for (let i = 1; i < batchRowValues.length; i++) {
+				let rowObject = {};
+				for (let j = 0; j < batchRowValues[i].length; j++) {
+					rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
+				}
+				rows.push(rowObject);
+			}
+			this.setState({[array_name]: rows})
+			console.log(rows)
+		});
+	}
+
+	componentDidMount() {
+		let URL_items = "https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key="
+		this.fetchData(URL_items, "initial_items")
+
+		let URL_components = "https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key="
+		this.fetchData(URL_components, "food_components");
+	}
+
 	filterList(event) {
 		let updatedList = this.state.initial_items;
 		updatedList = updatedList.filter(function(item)	{
-      return (!item.props.name.search(event.target.value.toLowerCase()) 
-      	|| !item.props.type.search(event.target.value.toLowerCase()));
+      return (!item.FOODNAME.toLowerCase().search(event.target.value.toLowerCase()) 
+      	|| !item.FOODTYPE.toLowerCase().search(event.target.value.toLowerCase()));
     });
     this.setState({items: updatedList});
 	}
 
-	componentDidMount() {
-		const API_KEY = process.env.REACT_APP_GOOGLESHEETS_APIKEY;
-		let API = "https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key="+API_KEY
-		fetch(API).then(response => response.json()).then(data => {
-			let batchRowValues = data.valueRanges[0].values;
-
-			const rows = [];
-			for (let i = 1; i < batchRowValues.length; i++) {
-				let rowObject = {};
-				for (let j = 0; j < batchRowValues[i].length; j++) {
-					rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
-				}
-				rows.push(<FoodItem id={rowObject.FOODID} name={rowObject.FOODNAME.toLowerCase()} type={rowObject.FOODTYPE.toLowerCase()} handleSubmit={this.handleSubmit} />);
-			}
-			this.setState({initial_items: rows});
-		});
-
-		API = "https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key="+API_KEY
-		fetch(API).then(response => response.json()).then(data => {
-			let batchRowValues = data.valueRanges[0].values;
-
-			const rows = [];
-			for (let i = 1; i < batchRowValues.length; i++) {
-				let rowObject = {};
-				for (let j = 0; j < batchRowValues[i].length; j++) {
-					rowObject[batchRowValues[0][j]] = batchRowValues[i][j];
-					rows.push(rowObject);
-				}
-			}
-			this.setState({food_components: rows});
-		});
-
-	}
-
 	updateNutrient(comp, nutrient){
 		let nutrient_value = comp.find((item) => (item.EUFDNAME === nutrient));
-		console.log(nutrient_value)
-		console.log(nutrient)
 		let new_value = parseFloat(nutrient_value.BESTLOC.replace(",", ".")) + this.state[nutrient];
-		console.log(this.state[nutrient])
 		this.setState({[nutrient]: new_value});
 	}
 
@@ -165,32 +155,32 @@ class FoodPlan extends React.Component {
 
 	handleSubmit(food, event) {
     let new_plan = this.state.planned_items.slice();
-    // TODO: fetch other components too
+    new_plan.push(this.state.initial_items.find((item) => item.FOODID === food.id));
     this.updateFoodComponents(food.id)
-    new_plan.push(<FoodItem id={food.id} name={food.name} type={food.type} handleSubmit={this.handleSubmit} />);
     this.setState({planned_items: new_plan})
 	}
 
 	render() {
-		// TODO: refactor, conditional rendering or new class for planned items
-		const planned = this.state.planned_items.map((item) =>
-			<ul>{item.props.name}, {item.props.type}, 100 g</ul>
-		);
-
     return (
 			<div className="food-items">
 				<div className="food-plan">
 					Planned foods:
-					<ul>{planned}</ul>
+					{this.state.planned_items.map((item) => 
+						<ul><PlannedItem id={item.FOODID} name={item.FOODNAME} type={item.FOODTYPE} /></ul>
+					)}
+					<br />
 					Total nutrients planned:
 					<ul>Energy: {this.state.ENERC.toFixed(2)} kcal</ul>
 					<ul>Protein: {this.state.PROT.toFixed(2)} g</ul>
 					<ul>Calcium: {this.state.CA.toFixed(2)} mg</ul>
 					<ul>Vitamin D: {this.state.VITD.toFixed(2)} ug</ul>
 				</div>
+
 				<div className="search">
 					<input type="text" placeholder="Search" onChange={this.filterList}/>
-					<ul>{this.state.items}</ul>
+					{this.state.items.map((item) =>
+						<ul><FoodItem id={item.FOODID} name={item.FOODNAME} type={item.FOODTYPE} handleSubmit={this.handleSubmit} /></ul>
+					)}
 				</div>
 	     </div>
     );
@@ -198,12 +188,20 @@ class FoodPlan extends React.Component {
 }
 
 
+class PlannedItem extends React.Component {
+	render() {
+		return(
+			<div>{this.props.name.toLowerCase()}, {this.props.type.toLowerCase()}, 100g</div>
+		)
+	}
+}
+
 class FoodItem extends React.Component {
 	render() {
 		return(
 			<div>
 				<button onClick={(event) => this.props.handleSubmit(this.props, event)}>
-					{this.props.id}, {this.props.name}, {this.props.type}
+					{this.props.id}, {this.props.name.toLowerCase()}, {this.props.type.toLowerCase()}
 				</button>
 			</div>
 		);

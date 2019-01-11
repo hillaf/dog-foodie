@@ -1,9 +1,13 @@
-TODO
+DONE
 - get nutritional values of the items
-- refactor api calls
 - calculate nutritional value of the basket
-- find out why there are five of each food components from the sheets api
-- color hilight: needs met/not met
+- refactor api calls
 - refactor planned foods rendering
-- option to choose the amount of item in basket
-- add more nutrients
+
+TODO
+
+- option to choose the amount of item in plan
+- delete items from plan
+- color hilight: needs met/not met
+- render search list results only after components have been fetched from the api
+- show nutrient values when hovered
