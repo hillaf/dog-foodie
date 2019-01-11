@@ -92,7 +92,7 @@ class FoodPlan extends React.Component {
 	constructor(props) {
 		super(props)
 		this.state = {
-			items: [],
+			filtered_items: [],
 			initial_items: [],
 			planned_items: [],
 			food_components: [],
@@ -120,7 +120,6 @@ class FoodPlan extends React.Component {
 				rows.push(rowObject);
 			}
 			this.setState({[array_name]: rows})
-			console.log(rows)
 		});
 	}
 
@@ -138,11 +137,11 @@ class FoodPlan extends React.Component {
       return (!item.FOODNAME.toLowerCase().search(event.target.value.toLowerCase()) 
       	|| !item.FOODTYPE.toLowerCase().search(event.target.value.toLowerCase()));
     });
-    this.setState({items: updatedList});
+    this.setState({filtered_items: updatedList});
 	}
 
-	updateNutrient(comp, nutrient){
-		let nutrient_value = comp.find((item) => (item.EUFDNAME === nutrient));
+	updateNutrient(components, nutrient){
+		let nutrient_value = components.find((item) => (item.EUFDNAME === nutrient));
 		let new_value = parseFloat(nutrient_value.BESTLOC.replace(",", ".")) + this.state[nutrient];
 		this.setState({[nutrient]: new_value});
 	}
@@ -178,7 +177,7 @@ class FoodPlan extends React.Component {
 
 				<div className="search">
 					<input type="text" placeholder="Search" onChange={this.filterList}/>
-					{this.state.items.map((item) =>
+					{this.state.filtered_items.map((item) =>
 						<ul><FoodItem id={item.FOODID} name={item.FOODNAME} type={item.FOODTYPE} handleSubmit={this.handleSubmit} /></ul>
 					)}
 				</div>
