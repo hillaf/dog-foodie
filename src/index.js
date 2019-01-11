@@ -20,18 +20,28 @@ class Dog extends React.Component {
 		this.handleChange = this.handleChange.bind(this);
 	}
 
+	calculateDailyNeeds() {
+		if (!this.state.activity) this.state.activity = 1
+		const met_weight = Math.pow(this.state.weight, 0.75)
+		const energy = ((met_weight * 500)*this.state.activity)
+
+		this.state = {
+			metabolic_weight: met_weight,
+			energy_joules: energy,
+			energy_kcals: (energy * 0.238),
+			calcium: (met_weight * 130),
+			protein: (met_weight * 5),
+			vit_d: (this.state.weight * 0.3),
+		}
+  }
+
 	handleChange(event) {
     this.setState({
     	[event.target.name]: event.target.value
     });
   }
 
-  handleSubmit(event) {
-    event.preventDefault();
-  }
-
   renderInfo(){
-  	this.calculateDailyNeeds();
   	return(
   		<div>
 				<ul>Metabolic weight: {this.state.metabolic_weight.toFixed(2)} kg</ul>
@@ -47,9 +57,11 @@ class Dog extends React.Component {
   }
 
   render() {
+		this.calculateDailyNeeds();
+
     return (
     	<div className="dog-info">
-				<form onSubmit={this.handleSubmit}>
+				<form>
 	        <label>
 	          Dog weight:
 	        </label>
@@ -69,21 +81,6 @@ class Dog extends React.Component {
 	      {this.renderInfo()}
 	    </div>
     );
-  }
-
-  calculateDailyNeeds() {
-  	if (this.state.activity == null) this.state.activity = 1
-		const met_weight = Math.pow(this.state.weight, 0.75)
-		const energy = ((met_weight * 500)*this.state.activity)
-
-  	this.state = {
-			metabolic_weight: met_weight,
-			energy_joules: energy,
-			energy_kcals: (energy * 0.238),
-			calcium: (met_weight * 130),
-			protein: (met_weight * 5),
-			vit_d: (this.state.weight * 0.3),
-  	}
   }
 }
 
@@ -119,20 +116,20 @@ class FoodPlan extends React.Component {
 				}
 				rows.push(rowObject);
 			}
-			this.setState({[array_name]: rows})
+			this.setState({[array_name]: rows});
 		});
 	}
 
 	componentDidMount() {
 		let URL_items = "https://sheets.googleapis.com/v4/spreadsheets/1PajSCxiGVECg6KlGLYyITT3_yT-XWJxzS_rWCHernb4/values:batchGet?ranges=food&majorDimension=ROWS&key="
-		this.fetchData(URL_items, "initial_items")
+		this.fetchData(URL_items, "initial_items");
 
 		let URL_components = "https://sheets.googleapis.com/v4/spreadsheets/1Ms7DM2qGxfu5r0GSe6zmG0r_wxFQvigPZrxcnU0ZsI4/values:batchGet?ranges=component_value&majorDimension=ROWS&key="
 		this.fetchData(URL_components, "food_components");
 	}
 
 	filterList(event) {
-		let updatedList = this.state.initial_items;
+		let updatedList = this.state.initial_items
 		updatedList = updatedList.filter(function(item)	{
       return (!item.FOODNAME.toLowerCase().search(event.target.value.toLowerCase()) 
       	|| !item.FOODTYPE.toLowerCase().search(event.target.value.toLowerCase()));
@@ -155,8 +152,8 @@ class FoodPlan extends React.Component {
 	handleSubmit(food, event) {
     let new_plan = this.state.planned_items.slice();
     new_plan.push(this.state.initial_items.find((item) => item.FOODID === food.id));
-    this.updateFoodComponents(food.id)
-    this.setState({planned_items: new_plan})
+    this.updateFoodComponents(food.id);
+    this.setState({planned_items: new_plan});
 	}
 
 	render() {
