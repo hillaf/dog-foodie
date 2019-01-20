@@ -3,12 +3,12 @@ DONE
 - calculate nutritional value of the basket
 - refactor api calls
 - refactor planned foods rendering
+- render search list results only after components have been fetched from the api
 
 TODO
 
 - delete items from plan
 - option to choose the amount of item in plan
-- refactor food plan rendering
-- render search list results only after components have been fetched from the api
+- better layout definitions
 - color hilight: needs met/not met
-- show nutrient values when hovered
+- show nutrient values when hovered  

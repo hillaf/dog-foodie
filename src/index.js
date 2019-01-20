@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import ReactLoading from 'react-loading';
 
 
 class Dog extends React.Component {
@@ -89,6 +90,7 @@ class FoodPlan extends React.Component {
 	constructor(props) {
 		super(props)
 		this.state = {
+			searched: false,
 			filtered_items: [],
 			initial_items: [],
 			planned_items: [],
@@ -99,7 +101,7 @@ class FoodPlan extends React.Component {
 			VITD: 0,
 		}
 		this.handleSubmit = this.handleSubmit.bind(this);
-		this.filterList = this.filterList.bind(this);
+		this.handleChange = this.handleChange.bind(this);
 	}
 
 	fetchData(URL, array_name) {
@@ -128,7 +130,9 @@ class FoodPlan extends React.Component {
 		this.fetchData(URL_components, "food_components");
 	}
 
-	filterList(event) {
+	handleChange(event) {
+		this.setState({searched: true});
+
 		let updatedList = this.state.initial_items
 		updatedList = updatedList.filter(function(item)	{
       return (!item.FOODNAME.toLowerCase().search(event.target.value.toLowerCase()) 
@@ -157,6 +161,8 @@ class FoodPlan extends React.Component {
 	}
 
 	render() {
+		const search_wait = this.state.searched && !(this.state.food_components && this.state.food_components.length > 0)
+
     return (
 			<div className="food-items">
 				<div className="food-plan">
@@ -171,18 +177,32 @@ class FoodPlan extends React.Component {
 					<ul>Calcium: {this.state.CA.toFixed(2)} mg</ul>
 					<ul>Vitamin D: {this.state.VITD.toFixed(2)} ug</ul>
 				</div>
-
-				<div className="search">
-					<input type="text" placeholder="Search" onChange={this.filterList}/>
-					{this.state.filtered_items.map((item) =>
-						<ul><FoodItem id={item.FOODID} name={item.FOODNAME} type={item.FOODTYPE} handleSubmit={this.handleSubmit} /></ul>
-					)}
+				<div>
+					<div className="search-bar">
+						<input type="text" placeholder="Search for a food item" onChange={this.handleChange}/>
+					</div>
+					<SearchResults filtered_items={this.state.filtered_items} handleSubmit={this.handleSubmit} wait={search_wait}/>
 				</div>
-	     </div>
+			</div>
     );
 	}
 }
 
+
+class SearchResults extends React.Component {
+	render() {
+		if (this.props.wait) return (<div className="search-wait"><ReactLoading type={"spin"} color={"#000000"}/></div>);
+		if (this.props.filtered_items.length < 1) return (<div className="search-empty">No search results</div>);
+
+		return(
+			<div className="search-results">
+				{this.props.filtered_items.map((item) =>
+					<ul><FoodItem id={item.FOODID} name={item.FOODNAME} type={item.FOODTYPE} handleSubmit={this.props.handleSubmit} /></ul>
+				)}
+			</div>
+		);
+	}
+}
 
 class PlannedItem extends React.Component {
 	render() {

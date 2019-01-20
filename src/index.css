@@ -7,39 +7,6 @@ ol, ul {
   padding-left: 30px;
 }
 
-.board-row:after {
-  clear: both;
-  content: "";
-  display: table;
-}
-
-.status {
-  margin-bottom: 10px;
-}
-
-.square {
-  background: #fff;
-  border: 1px solid #999;
-  float: left;
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 34px;
-  height: 34px;
-  margin-right: -1px;
-  margin-top: -1px;
-  padding: 0;
-  text-align: center;
-  width: 34px;
-}
-
-.square:focus {
-  outline: none;
-}
-
-.kbd-navigation .square:focus {
-  background: #ddd;
-}
-
 .calculator {
   display: flex;
   flex-direction: row;
@@ -51,15 +18,25 @@ ol, ul {
 
 .food-items {
   margin-left: 20px;
+  margin-right: 20px;
   display: flex;
   flex-direction: row;
 }
 
 .food-plan {
   margin-left: 20px;
-  width: 50%;
+  margin-right: 60px;
+  width: 300px;
 }
-
 .search {
   margin-left: 20px;
+}
+.search-wait {
+  margin-left: 40px;
+  margin-top: 40px;
+}
+
+.search-empty {
+  margin-left: 40px;
+  margin-top: 40px;
 }
