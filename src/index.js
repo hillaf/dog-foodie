@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import ReactLoading from 'react-loading';
+import './index.css';
+
 
 
 class Dog extends React.Component {
